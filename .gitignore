@@ -169,3 +169,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+/LLM/local/gemma_model_2b/
+/LLM/local/qwen_model(1.5-0.5B)/
+/LLM/local/qwen_model(1.5-1.8B)/
+/LLM/local/qwen_model(2.5-3B)/
