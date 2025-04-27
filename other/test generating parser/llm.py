@@ -159,7 +159,8 @@ def parse(url,api_key):
     return execute_parser(parser_code, html)
 
 
-api_key = "api_key"
+api_key = "aoj62ONKMqY0j8lQWz3d7iYIv62vX14U"
 model = "mistral-large-latest"
-url = "https://www.gismeteo.ru/weather-sankt-peterburg-4079/"
+url = "https://www.comet.com/site/blog/top-5-web-scraping-methods-including-using-llms/"
+# url = "https://www.gismeteo.ru/weather-sankt-peterburg-4079/"
 print(parse(url, api_key))

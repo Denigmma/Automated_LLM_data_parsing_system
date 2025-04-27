@@ -55,19 +55,6 @@ clean_text = extract_clean_text(html)
 
 
 
-# import requests
-#
-# url="https://www.gismeteo.ru/weather-sankt-peterburg-4079/"
-# headers = {
-#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-#     "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
-# }
-#
-# html_content = requests.get(url, headers=headers)
-# print(html_content.status_code)
-# print(html_content.text)
-
-
 
 meta_data="Город, Температура сейчас"
 
@@ -75,14 +62,14 @@ meta_data="Город, Температура сейчас"
 
 from mistralai import Mistral
 # api_key = os.environ["MISTRAL_API_KEY"]
-api_key = "api_key"
+api_key = "aoj62ONKMqY0j8lQWz3d7iYIv62vX14U"
 model = "mistral-large-latest"
 # model = "pixtral-12b-2409"
 
 client = Mistral(api_key=api_key)
 
 system_prompt = (
-    """"Ты языковая модель, выполняющая *исключительно* структурирование и очистку текста,
+    """Ты языковая модель, выполняющая *исключительно* структурирование и очистку текста,
     без добавления новых фраз, переиначивания смыслов или выдумывания информации.
     Твоя задача — убрать HTML-артефакты, дубли, повторяющиеся блоки, рекламные вставки и прочий шум,
     оставив только чистую, читаемую, максимально близкую к оригиналу версию текста.
@@ -145,8 +132,3 @@ def save_clean_json(raw_json: str, filename: str):
         print(f"Ошибка при разборе JSON: {e}")
 
 save_clean_json(response_text, "output.json")
-
-# # Страховка от неожиданных символов
-# response_text = response_text.replace('“', '"').replace('”', '"')
-# response_text = response_text.replace('’', "'").replace('‘', "'")
-# response_text = re.sub(r'[–—]', '-', response_text)  # длинные тире → обычное

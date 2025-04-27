@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Automated LLM Data Parsing System</title>
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+  <h1>Automated LLM Data Parsing System</h1>
+
+  <form id="parse-form">
+    <fieldset>
+      <legend>Choose mode:</legend>
+      <label>
+        <input type="radio" name="mode" value="structuring" checked />
+        Structuring Text
+      </label>
+      <label>
+        <input type="radio" name="mode" value="codegen" />
+        Generate Parser
+      </label>
+    </fieldset>
+
+    <div>
+      <label>
+        URL:
+        <input
+          type="url"
+          id="url-input"
+          name="url"
+          required
+          placeholder="https://example.com"
+          style="width: 400px;"
+        />
+      </label>
+    </div>
+
+    <div id="meta-group">
+      <label>
+        Metadata fields (comma-separated):
+        <input
+          type="text"
+          id="meta-input"
+          name="meta"
+          placeholder="Город, Температура сейчас"
+          style="width: 400px;"
+        />
+      </label>
+    </div>
+
+    <div>
+      <button type="submit">Parse</button>
+    </div>
+  </form>
+
+  <h2>Result</h2>
+  <pre id="output" style="background: #f4f4f4; padding: 10px; white-space: pre-wrap;"></pre>
+</body>
+</html>
