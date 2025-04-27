@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from autoparse.tools.converter.json_to_text import convert_json_to_text
 
 from agent.agent import run_agent
 
@@ -43,6 +44,7 @@ async def parse(req: ParseRequest):
             mode=req.mode,
             dynamic=None
         )
-        return JSONResponse(content=result)
+        result_text = convert_json_to_text(result)
+        return JSONResponse(content={"json": result,"text": result_text})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

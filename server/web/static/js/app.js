@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form      = document.getElementById("parse-form");
   const metaGroup = document.getElementById("meta-group");
-  const output    = document.getElementById("output");
+  const textOut   = document.getElementById("textResult");
+  const jsonOut   = document.getElementById("jsonResult");
 
   // Show or hide metadata field based on selected mode
   function updateMetaVisibility() {
@@ -22,7 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // on submit, fire AJAX
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    output.textContent = "Parsing…";
+    textOut.textContent = "Parsing…";
+    jsonOut.textContent = "Parsing…";
 
     const url  = document.getElementById("url-input").value;
     const mode = form.elements["mode"].value;
@@ -40,9 +42,18 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(payload),
       });
       const data = await resp.json();
-      output.textContent = JSON.stringify(data, null, 2);
+      if (data.error) {
+        textOut.textContent = "";
+        jsonOut.textContent = "Error: " + data.error;
+      } else {
+        textOut.textContent = data.text ?? data.cleaned_text ?? "";
+        // если у вас в API ключ «json» — то data.json
+        const j = data.json ?? data;
+        jsonOut.textContent = JSON.stringify(j, null, 2);
+      }
     } catch (err) {
-      output.textContent = "Error: " + err.message;
+      textOut.textContent = "";
+      jsonOut.textContent = "Fetch error: " + err.message;
     }
   });
 });

@@ -4,56 +4,146 @@
   <meta charset="UTF-8" />
   <title>Automated LLM Data Parsing System</title>
   <script src="/static/js/app.js" defer></script>
+  <style>
+    /* --- Базовые стили страницы --- */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f4f7fc;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1.5rem 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      display: grid;
+      gap: 1rem;
+    }
+    fieldset {
+      border: none;
+      display: flex;
+      gap: 1rem;
+      margin: 0;
+    }
+    label {
+      font-size: 0.95rem;
+    }
+    input[type="url"],
+    input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    /* --- Результаты --- */
+    .results {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .result-box {
+      background: #f9f9f9;
+      padding: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      max-height: 400px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+    .result-box h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: #444;
+    }
+    /* Скрываем метаполе, когда режим — codegen */
+    #meta-group {
+      transition: opacity 0.2s;
+    }
+  </style>
 </head>
 <body>
-  <h1>Automated LLM Data Parsing System</h1>
+  <div class="container">
+    <h1>Automated LLM Data Parsing</h1>
 
-  <form id="parse-form">
-    <fieldset>
-      <legend>Choose mode:</legend>
-      <label>
-        <input type="radio" name="mode" value="structuring" checked />
-        Structuring Text
-      </label>
-      <label>
-        <input type="radio" name="mode" value="codegen" />
-        Generate Parser
-      </label>
-    </fieldset>
+    <form id="parse-form">
+      <fieldset>
+        <legend>Mode:</legend>
+        <label>
+          <input type="radio" name="mode" value="structuring" checked />
+          Structuring Text
+        </label>
+        <label>
+          <input type="radio" name="mode" value="codegen" />
+          Generate Parser
+        </label>
+      </fieldset>
 
-    <div>
-      <label>
-        URL:
-        <input
-          type="url"
-          id="url-input"
-          name="url"
-          required
-          placeholder="https://example.com"
-          style="width: 400px;"
-        />
-      </label>
+      <div>
+        <label>
+          URL:
+          <input
+            type="url"
+            id="url-input"
+            name="url"
+            required
+            placeholder="https://example.com"
+          />
+        </label>
+      </div>
+
+      <div id="meta-group">
+        <label>
+          Metadata fields (comma-separated):
+          <input
+            type="text"
+            id="meta-input"
+            name="meta"
+            placeholder="City, Current temperature"
+          />
+        </label>
+      </div>
+
+      <div>
+        <button type="submit">Parse</button>
+      </div>
+    </form>
+
+    <div class="results">
+      <div class="result-box">
+        <h3>Structured Text</h3>
+        <pre id="textResult"></pre>
+      </div>
+      <div class="result-box">
+        <h3>Raw JSON</h3>
+        <pre id="jsonResult"></pre>
+      </div>
     </div>
-
-    <div id="meta-group">
-      <label>
-        Metadata fields (comma-separated):
-        <input
-          type="text"
-          id="meta-input"
-          name="meta"
-          placeholder="Город, Температура сейчас"
-          style="width: 400px;"
-        />
-      </label>
-    </div>
-
-    <div>
-      <button type="submit">Parse</button>
-    </div>
-  </form>
-
-  <h2>Result</h2>
-  <pre id="output" style="background: #f4f4f4; padding: 10px; white-space: pre-wrap;"></pre>
+  </div>
 </body>
 </html>
