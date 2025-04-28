@@ -1,101 +1,122 @@
 import sys
 from bs4 import BeautifulSoup
 
-# Чтение HTML из stdin
-html = sys.stdin.read()
+def main():
+    # Чтение HTML из stdin
+    html_content = sys.stdin.read()
 
-# Парсинг HTML
-soup = BeautifulSoup(html, 'html.parser')
+    # Парсинг HTML с помощью BeautifulSoup
+    soup = BeautifulSoup(html_content, 'html.parser')
 
-# Извлечение и печать информации
-def print_section(title, content):
-    print(f"{title}:")
-    print(content)
-    print()
+    # Извлечение и печать всех заголовков
+    headings = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+    if headings:
+        print("Заголовки:")
+        for heading in headings:
+            print(heading.get_text(strip=True))
+    else:
+        print("Не найдены заголовки")
 
-# Мобильная версия
-mobile_switch = soup.find(class_='mobile-switch-notify')
-if mobile_switch:
-    print_section("Мобильная версия", mobile_switch.get_text(strip=True))
+    # Извлечение и печать всех ссылок
+    links = soup.find_all('a')
+    if links:
+        print("\nСсылки:")
+        for link in links:
+            href = link.get('href', '')
+            text = link.get_text(strip=True)
+            print(f"{text}: {href}")
+    else:
+        print("Не найдены ссылки")
 
-# Реклама
-ad_section = soup.find(class_='wb6f5bc57')
-if ad_section:
-    print_section("Реклама", ad_section.get_text(strip=True))
+    # Извлечение и печать всех изображений
+    images = soup.find_all('img')
+    if images:
+        print("\nИзображения:")
+        for img in images:
+            src = img.get('src', '')
+            alt = img.get('alt', '')
+            print(f"{alt}: {src}")
+    else:
+        print("Не найдены изображения")
 
-# Логотип
-header_logo = soup.find(class_='header-logo')
-if header_logo:
-    print_section("Логотип", header_logo.get_text(strip=True))
+    # Извлечение и печать всех кнопок
+    buttons = soup.find_all('button')
+    if buttons:
+        print("\nКнопки:")
+        for button in buttons:
+            text = button.get_text(strip=True)
+            print(text)
+    else:
+        print("Не найдены кнопки")
 
-# Навигация
-nav_links = soup.find_all(class_='nav-link')
-if nav_links:
-    print_section("Навигация", '\n'.join([link.get_text(strip=True) for link in nav_links]))
+    # Извлечение и печать всех элементов с классом 'weather-icon-group'
+    weather_icons = soup.find_all(class_='weather-icon-group')
+    if weather_icons:
+        print("\nИконки погоды:")
+        for icon in weather_icons:
+            print(icon.get_text(strip=True))
+    else:
+        print("Не найдены иконки погоды")
 
-# Хлебные крошки
-breadcrumbs_links = soup.find_all(class_='breadcrumbs-link')
-if breadcrumbs_links:
-    print_section("Хлебные крошки", ' / '.join([link.get_text(strip=True) for link in breadcrumbs_links]))
+    # Извлечение и печать всех элементов с классом 'temperature-value'
+    temperatures = soup.find_all(class_='temperature-value')
+    if temperatures:
+        print("\nТемпературы:")
+        for temp in temperatures:
+            print(temp.get_text(strip=True))
+    else:
+        print("Не найдены температуры")
 
-# Заголовок страницы
-page_title = soup.find(class_='page-title')
-if page_title:
-    print_section("Заголовок страницы", page_title.get_text(strip=True))
+    # Извлечение и печать всех элементов с классом 'speed-value'
+    speeds = soup.find_all(class_='speed-value')
+    if speeds:
+        print("\nСкорости ветра:")
+        for speed in speeds:
+            print(speed.get_text(strip=True))
+    else:
+        print("Не найдены скорости ветра")
 
-# Вкладки погоды
-weathertabs = soup.find_all(class_='weathertab')
-if weathertabs:
-    print_section("Вкладки погоды", '\n'.join([tab.get_text(strip=True).replace('\n', ' ').strip() for tab in weathertabs]))
+    # Извлечение и печать всех элементов с классом 'precipitation'
+    precipitations = soup.find_all(class_='precipitation')
+    if precipitations:
+        print("\nОсадки:")
+        for precipitation in precipitations:
+            print(precipitation.get_text(strip=True))
+    else:
+        print("Не найдены осадки")
 
-# Параметры погоды
-weather_parameters = soup.find(class_='widget-weather-parameters')
-if weather_parameters:
-    print_section("Параметры погоды", weather_parameters.get_text(strip=True).replace('\n', ' ').strip())
+    # Извлечение и печать всех элементов с классом 'feed-item'
+    feed_items = soup.find_all(class_='feed-item')
+    if feed_items:
+        print("\nЭлементы ленты новостей:")
+        for item in feed_items:
+            link = item.find('a')
+            if link:
+                href = link.get('href', '')
+                text = link.get_text(strip=True)
+                print(f"{text}: {href}")
+    else:
+        print("Не найдены элементы ленты новостей")
 
-# Солнце и Луна
-astro_sun = soup.find(class_='astro-sun')
-if astro_sun:
-    print_section("Солнце", astro_sun.get_text(strip=True).replace('\n', ' ').strip())
+    # Извлечение и печать всех элементов с классом 'breadcrumbs-link'
+    breadcrumbs = soup.find_all(class_='breadcrumbs-link')
+    if breadcrumbs:
+        print("\nХлебные крошки:")
+        for breadcrumb in breadcrumbs:
+            href = breadcrumb.get('href', '')
+            text = breadcrumb.get_text(strip=True)
+            print(f"{text}: {href}")
+    else:
+        print("Не найдены хлебные крошки")
 
-astro_moon = soup.find(class_='astro-moon')
-if astro_moon:
-    print_section("Луна", astro_moon.get_text(strip=True).replace('\n', ' ').strip())
+    # Извлечение и печать всех элементов с классом 'astro-times'
+    astro_times = soup.find_all(class_='astro-times')
+    if astro_times:
+        print("\nАстрономические времена:")
+        for time in astro_times:
+            print(time.get_text(strip=True))
+    else:
+        print("Не найдены астрономические времена")
 
-# Новости
-news_titles = soup.find_all(class_='rss-card')
-if news_titles:
-    print_section("Новости", '\n'.join([title.get_text(strip=True) for title in news_titles]))
-
-# Погода на карте
-maps_list = soup.find_all(class_='list-item')
-if maps_list:
-    print_section("Погода на карте", '\n'.join([item.get_text(strip=True) for item in maps_list]))
-
-# Популярные города
-popular_cities = soup.find_all(class_='link-hover', href=True)
-if popular_cities:
-    print_section("Популярные города", '\n'.join([city.get_text(strip=True) for city in popular_cities]))
-
-# Лента новостей
-feed_items = soup.find_all(class_='feed-item')
-if feed_items:
-    print_section("Лента новостей", '\n'.join([item.get_text(strip=True) for item in feed_items]))
-
-# Объясняем.рф
-explain_feed_items = soup.find_all(class_='feed-item', href=True)
-if explain_feed_items:
-    print_section("Объясняем.рф", '\n'.join([item.get_text(strip=True) for item in explain_feed_items]))
-
-# Футер
-footer_menu = soup.find_all(class_='footer-item')
-if footer_menu:
-    print_section("Футер", '\n'.join([item.get_text(strip=True) for item in footer_menu]))
-
-footer_text = soup.find(class_='footer-text')
-if footer_text:
-    print_section("Футер текст", footer_text.get_text(strip=True))
-
-footer_copy = soup.find(class_='footer-copy')
-if footer_copy:
-    print_section("Футер копирайт", footer_copy.get_text(strip=True))
+if __name__ == "__main__":
+    main()

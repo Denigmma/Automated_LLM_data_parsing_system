@@ -12,6 +12,23 @@ from autoparse.tools.converter.json_to_text import convert_json_to_text
 
 from agent.agent import run_agent
 
+import logging
+import logging.config
+from pathlib import Path
+import yaml
+
+# находим корень проекта (две папки вверх от текущего файла)
+BASE_DIR = Path(__file__).resolve().parents[2]
+LOG_CFG = BASE_DIR / "config" / "logging.yaml"
+
+if LOG_CFG.exists():
+    cfg = yaml.safe_load(LOG_CFG.read_text(encoding="utf-8"))
+    logging.config.dictConfig(cfg)
+else:
+    # fallback — простой вывод в консоль
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger(__name__).warning(f"Не найден {LOG_CFG}, использую базовое логирование")
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="server/web/static"), name="static")
 templates = Jinja2Templates(directory="server/web/templates")
