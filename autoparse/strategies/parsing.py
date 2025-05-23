@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, List
+import os
 
 from autoparse.tools.llm.client import LLMClient
 from autoparse.tools.llm.structuring import parse_structured
 from autoparse.tools.llm.codegen import generate_parser
+from autoparse.cache.code_cache import ParserCodeCache
 
 
 class ParsingStrategy(ABC):
@@ -25,26 +27,24 @@ class ParsingStrategy(ABC):
 
 
 class StructuringParsingStrategy(ParsingStrategy):
-    """
-    Strategy #1: plain-text structuring.
-    Uses LLM to produce JSON with cleaned_text + meta_data.
-    """
     def parse(
         self,
         cleaned: str,
-        meta: Dict[str, Any],
+        meta: List[str],
         client: LLMClient,
         **kwargs
     ) -> Dict[str, Any]:
-        # parse_structured returns a dict with keys "cleaned_text" and "meta_data"
-        return parse_structured(cleaned, meta, client)
+        return parse_structured(cleaned, meta, client, kwargs["user_query"])
+
 
 
 class CodegenParsingStrategy(ParsingStrategy):
     """
-    Strategy #2: code-generation.
-    Uses LLM to generate a Python parser script and returns it.
+    Strategy #2: code-generation with semantic cache.
     """
+    def __init__(self, code_cache: ParserCodeCache):
+        self.code_cache = code_cache
+
     def parse(
         self,
         cleaned: str,
@@ -52,6 +52,23 @@ class CodegenParsingStrategy(ParsingStrategy):
         client: LLMClient,
         **kwargs
     ) -> Dict[str, Any]:
-        # url will be used downstream by parser cache
-        parser_code = generate_parser(cleaned, client)
-        return {"parser_code": parser_code}
+        """
+        kwargs должно содержать:
+          - url: str
+          - user_query: str
+        """
+        url = kwargs["url"]
+        user_query = kwargs["user_query"]
+
+        # семантический поиск в ChromaDB
+        hit = self.code_cache.find_similar(url, user_query)
+        if hit:
+            file_path = hit["file_path"]
+            full_path = os.path.join(self.code_cache.code_dir, file_path)
+            with open(full_path, "r", encoding="utf-8") as f:
+                code = f.read()
+        else:
+            code = generate_parser(cleaned, user_query, client)
+            self.code_cache.store(url, user_query, code)
+
+        return {"parser_code": code}

@@ -26,11 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
     textOut.textContent = "Parsing…";
     jsonOut.textContent = "Parsing…";
 
-    const url  = document.getElementById("url-input").value;
-    const mode = form.elements["mode"].value;
-    const meta = document.getElementById("meta-input").value;
+    const url   = document.getElementById("url-input").value;
+    const query = document.getElementById("query-input").value;
+    const mode  = form.elements["mode"].value;
+    const meta  = document.getElementById("meta-input").value;
 
-    const payload = { url, mode };
+    const payload = { url, query, mode };
     if (mode === "structuring") {
       payload.meta = meta;
     }
@@ -41,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       const data = await resp.json();
       if (data.error) {
         textOut.textContent = "";

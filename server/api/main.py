@@ -1,5 +1,3 @@
-# server/api/main.py
-
 import os
 from typing import Optional
 

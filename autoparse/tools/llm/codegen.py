@@ -3,14 +3,15 @@ from .client import LLMClient
 from .prompts import SYSTEM_PROMPT_CODEGEN, USER_PROMPT_CODEGEN_TEMPLATE
 
 
-def generate_parser(html: str, client: LLMClient) -> str:
+def generate_parser(html: str, user_query: str, client: LLMClient) -> str:
     """
-    Invoke the LLM to generate a Python parser for the given HTML.
+    Invoke the LLM to generate a Python parser for the given HTML,
+    extracting **only** data requested in user_query.
     Returns the raw Python code (without markdown fences).
     """
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT_CODEGEN},
-        {"role": "user", "content": USER_PROMPT_CODEGEN_TEMPLATE.format(html=html)}
+        {"role": "user", "content": USER_PROMPT_CODEGEN_TEMPLATE.format(html=html, query=user_query)}
     ]
     response = client.chat_complete(messages, temperature=None)
     raw = response.choices[0].message.content

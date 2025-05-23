@@ -9,7 +9,7 @@ def is_dynamic_site(html: str) -> bool:
     return "window.__INITIAL_STATE__" in html or "<div id=\"root\"" in html
 
 
-def get_pipeline(html: str, mode: str = "auto"):
+def get_pipeline(html: str, mode: str = "auto", code_cache=None):
     """
     Choose cleaning and parsing strategies.
 
@@ -19,17 +19,19 @@ def get_pipeline(html: str, mode: str = "auto"):
           - "auto": detect based on html
           - "structuring": always do full clean + LLM→JSON
           - "codegen": always do light clean + LLM→codegen
+        code_cache: instance of ParserCodeCache (for codegen)
 
     Returns:
         (cleaning_strategy, parsing_strategy)
     """
     if mode == "structuring":
         return FullCleaningStrategy(), StructuringParsingStrategy()
+
     if mode == "codegen":
-        return LightCleaningStrategy(), CodegenParsingStrategy()
+        return LightCleaningStrategy(), CodegenParsingStrategy(code_cache)
 
     # auto mode
     if is_dynamic_site(html):
         return FullCleaningStrategy(), StructuringParsingStrategy()
     else:
-        return LightCleaningStrategy(), CodegenParsingStrategy()
+        return LightCleaningStrategy(), CodegenParsingStrategy(code_cache)

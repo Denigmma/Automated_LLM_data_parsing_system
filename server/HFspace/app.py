@@ -3,62 +3,99 @@ import json
 import gradio as gr
 
 from autoparse.parser import Parser
+from autoparse.tools.converter.json_to_text import convert_json_to_text
 
-# Считываем ключи из переменных окружения (если нужны для LLMClient)
-API_KEY = os.getenv("MISTRAL_API_KEY", None)
+API_KEY   = os.getenv("MISTRAL_API_KEY", None)
 LLM_MODEL = os.getenv("LLM_MODEL", None)
 CACHE_DIR = os.getenv("CACHE_DIR", None)
-
-# Инстанцируем наш парсер
 parser = Parser(cache_dir=CACHE_DIR, api_key=API_KEY, model=LLM_MODEL)
 
-def run_parse(
-    url: str,
-    mode: str,
-    dynamic: bool
-) -> str:
+
+def run_parse(url: str, query: str, mode: str, meta: str):
     """
-    Вызывается при нажатии кнопки «Parse».
-    Возвращает результат в виде отформатированного JSON.
+    url: страница для парсинга
+    query: что именно нужно извлечь
+    mode: 'structuring' или 'codegen'
+    meta: CSV список полей для structuring
     """
-    try:
-        # Парсим страницу
-        result = parser.parse_url(url, meta={}, mode=mode, dynamic=dynamic)
-        # Приводим к строке
-        return json.dumps(result, ensure_ascii=False, indent=2)
-    except Exception as e:
-        return json.dumps({"error": str(e)}, ensure_ascii=False, indent=2)
+    if mode == "structuring":
+        meta_list = [m.strip() for m in meta.split(",") if m.strip()]
+    else:
+        meta_list = []
+
+    result = parser.parse_url(
+        url=url,
+        meta=meta_list,
+        user_query=query,
+        mode=mode,
+        dynamic=False
+    )
+
+    text = convert_json_to_text(result)
+    # для codegen выводим только JSON
+    raw_json = json.dumps(result, ensure_ascii=False, indent=2)
+
+    return text, raw_json
 
 
-# --- Графический интерфейс ---
-with gr.Blocks(
-    title="AutoParse HF Space",
-    analytics_enabled=False
-) as demo:
-
-    gr.Markdown("## Автоматический парсер сайтов на основе LLM\n"
-                "Введите URL, выберите режим и нажмите **Parse**.")
+with gr.Blocks(title="AutoParse HF Space", analytics_enabled=False) as demo:
+    gr.Markdown(
+        "## Автоматический парсер сайтов на основе LLM\n"
+        "Введите URL, запрос (Query), выберите режим и нажмите **Parse**."
+    )
 
     with gr.Row():
-        url_input = gr.Textbox(label="URL для парсинга", placeholder="https://example.com")
+        url_input = gr.Textbox(
+            label="URL для парсинга",
+            placeholder="https://example.com",
+            lines=1
+        )
+        query_input = gr.Textbox(
+            label="Query",
+            placeholder="Что именно нужно извлечь?",
+            lines=1
+        )
         mode_radio = gr.Radio(
-            choices=["auto", "structuring", "codegen"],
-            value="auto",
+            choices=["structuring", "codegen"],
+            value="structuring",
             label="Режим парсинга"
         )
-        dynamic_chk = gr.Checkbox(label="JS-рендеринг (Selenium)", value=False)
+
+    meta_input = gr.Textbox(
+        label="Metadata fields (comma-separated)",
+        placeholder="City, Current temperature",
+        visible=True
+    )
+
+    def toggle_meta(mode):
+        return gr.update(visible=(mode == "structuring"))
+
+    mode_radio.change(
+        fn=toggle_meta,
+        inputs=[mode_radio],
+        outputs=[meta_input]
+    )
 
     parse_btn = gr.Button("Parse")
-    output = gr.Code(label="Результат (JSON)", language="json")
+
+    with gr.Row():
+        structured_out = gr.Textbox(
+            label="Structured Text",
+            lines=10,
+            interactive=False
+        )
+        json_out = gr.Code(
+            label="Raw JSON",
+            language="json"
+        )
 
     parse_btn.click(
         fn=run_parse,
-        inputs=[url_input, mode_radio, dynamic_chk],
-        outputs=[output],
+        inputs=[url_input, query_input, mode_radio, meta_input],
+        outputs=[structured_out, json_out]
     )
 
+    demo.queue()
+
 if __name__ == "__main__":
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=int(os.getenv("PORT", 7860))
-    )
+    demo.launch()

@@ -36,6 +36,7 @@ templates = Jinja2Templates(directory="server/web/templates")
 
 class ParseRequest(BaseModel):
     url:  str
+    query: str
     mode: str
     meta: Optional[str] = None
 
@@ -58,6 +59,7 @@ async def parse(req: ParseRequest):
         result = run_agent(
             url=req.url,
             meta=meta_list,
+            user_query=req.query,
             mode=req.mode,
             dynamic=None
         )

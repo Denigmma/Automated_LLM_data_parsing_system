@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict
+from typing import List, Optional, Any, Dict
 
 from autoparse.dispatcher import get_pipeline
 from autoparse.tools.fetchers.static_fetcher import fetch_static_html
@@ -37,10 +37,12 @@ class Parser:
         )
         self.code_cache = ParserCodeCache(base)
 
+
     def parse_url(
         self,
         url: str,
-        meta: Dict[str, Any],
+        meta: Optional[List[str]],
+        user_query: str,
         mode: str = "auto",
         dynamic: bool = None,
         timeout: int = 10
@@ -67,21 +69,28 @@ class Parser:
             html = fetch_static_html(url, timeout=timeout)
 
         # 2) pick cleaning & parsing strategies
-        cleaning_strategy, parsing_strategy = get_pipeline(html, mode)
+        cleaning_strategy, parsing_strategy = get_pipeline(html, mode, self.code_cache)
 
         # 3) clean HTML
         cleaned_html = cleaning_strategy.clean(html)
 
-        # 4) branch by mode
-        if mode == "codegen":
-            # try cache first
-            code = self.code_cache.get(url)
-            if code is None:
-                # generate new parser code
-                code = generate_parser(cleaned_html, self.client)
-                self.code_cache.store(url, code)
-            result = run_and_convert_parser(code, cleaned_html)
-            return result
+        result = parsing_strategy.parse(
+            cleaned_html,
+            meta,
+            self.client,
+            url=url,
+            user_query=user_query
+        )
 
-        # structuring (includes auto→structuring for dynamic)
-        return parse_structured(cleaned_html, meta, self.client)
+        if mode == "codegen":
+            return run_and_convert_parser(
+                result["parser_code"],
+                cleaned_html
+            )
+
+        return result
+
+
+
+
+
