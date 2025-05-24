@@ -23,12 +23,13 @@ def _get_parser() -> Parser:
 
 
 def parse_url(
-        url: str,
-        user_query: str,
-        meta: Optional[List[str]] = None,
-        mode: str = "auto",
-        dynamic: bool = False,
-        timeout: int = 10
+    url: str,
+    user_query: str,
+    meta: Optional[List[str]] = None,
+    mode: str = "auto",
+    dynamic: bool = False,
+    timeout: int = 10,
+    regenerate: bool = False
 ) -> Dict[str, Any]:
     """
     High-level façade over autoparse.Parser.parse_url.
@@ -48,5 +49,6 @@ def parse_url(
         user_query=user_query,
         mode=mode,
         dynamic=dynamic,
-        timeout=timeout
+        timeout=timeout,
+        regenerate=regenerate
     )

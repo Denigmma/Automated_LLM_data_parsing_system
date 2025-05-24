@@ -81,8 +81,13 @@
       font-size: 1.1rem;
       color: #444;
     }
-    /* Скрываем метаполе, когда режим — codegen */
-    #meta-group {
+    .hidden {
+      display: none;
+    }
+
+    /* Анимация для meta-group и regenerate-group */
+    #meta-group,
+    #regenerate-group {
       transition: opacity 0.2s;
     }
   </style>
@@ -104,7 +109,7 @@
         </label>
       </fieldset>
 
-            <div>
+      <div>
         <label>
           URL:
           <input
@@ -141,7 +146,14 @@
           />
         </label>
       </div>
-
+      <div id="regenerate-group" class="hidden">
+          <label>
+            Regenerate parser code
+            <input type="checkbox"
+                   id="regenerate-checkbox"
+                   name="regenerate" />
+          </label>
+      </div>
 
       <div>
         <button type="submit">Parse</button>

@@ -172,3 +172,74 @@ class ParserCodeCache:
             documents=[user_query],
             metadatas=[{"url": url, "file_path": filename}]
         )
+
+    def delete(self, url: str, user_query: str, semantic: bool = False) -> bool:
+        """
+        Удаляет кэш и файл-парсер по точному (semantic=False) или семантическому (semantic=True) совпадению.
+        Возвращает True, если удаление выполнено (иначе False).
+        """
+        con = sqlite3.connect(self.db_path)
+        cur = con.cursor()
+
+        if semantic:
+            # 1) ищем семантически похожую запись
+            hit = self.find_similar(url, user_query)
+            if not hit:
+                con.close()
+                return False
+
+            file_path = hit["file_path"]
+            # достаём точный запрос из БД, чтобы знать doc_id
+            cur.execute(
+                "SELECT user_query FROM code_cache WHERE url = ? AND file_path = ?",
+                (url, file_path)
+            )
+            row = cur.fetchone()
+            con.close()
+            if not row:
+                return False
+
+            matched_query = row[0]
+            # удаляем из SQLite
+            con = sqlite3.connect(self.db_path)
+            cur = con.cursor()
+            cur.execute(
+                "DELETE FROM code_cache WHERE url = ? AND file_path = ?",
+                (url, file_path)
+            )
+            con.commit()
+            con.close()
+
+            # удаляем файл и запись из ChromaDB
+            os.remove(os.path.join(self.code_dir, file_path))
+            doc_id = f"{url}:{matched_query}"
+            self.collection.delete(ids=[doc_id])
+            return True
+
+        else:
+            # точное совпадение url + user_query
+            cur.execute(
+                "SELECT file_path FROM code_cache WHERE url = ? AND user_query = ?",
+                (url, user_query)
+            )
+            row = cur.fetchone()
+            con.close()
+            if not row:
+                return False
+
+            file_path = row[0]
+            # удаляем из SQLite
+            con = sqlite3.connect(self.db_path)
+            cur = con.cursor()
+            cur.execute(
+                "DELETE FROM code_cache WHERE url = ? AND user_query = ?",
+                (url, user_query)
+            )
+            con.commit()
+            con.close()
+
+            # удаляем файл и запись из ChromaDB
+            os.remove(os.path.join(self.code_dir, file_path))
+            doc_id = f"{url}:{user_query}"
+            self.collection.delete(ids=[doc_id])
+            return True

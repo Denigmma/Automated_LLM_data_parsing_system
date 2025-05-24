@@ -6,8 +6,6 @@ from autoparse.tools.fetchers.static_fetcher import fetch_static_html
 from autoparse.tools.fetchers.dynamic_fetcher import fetch_dynamic_html
 from autoparse.cache.code_cache import ParserCodeCache
 from autoparse.tools.llm.client import LLMClient
-from autoparse.tools.llm.structuring import parse_structured
-from autoparse.tools.llm.codegen import generate_parser
 from autoparse.tools.converter.converterRunParser import run_and_convert_parser
 from autoparse.tools.fetchers.dynamic_detector import is_dynamic_site
 
@@ -45,7 +43,8 @@ class Parser:
         user_query: str,
         mode: str = "auto",
         dynamic: bool = None,
-        timeout: int = 10
+        timeout: int = 10,
+        regenerate: bool = False
     ) -> Dict[str, Any]:
         """
         Fetch, clean and parse a URL.
@@ -67,6 +66,13 @@ class Parser:
             html = fetch_dynamic_html(url, timeout=timeout)
         else:
             html = fetch_static_html(url, timeout=timeout)
+
+        if mode == "codegen" and regenerate:
+            # сначала пробуем точное совпадение
+            deleted = self.code_cache.delete(url, user_query, semantic=False)
+            if not deleted:
+                # иначе — любое семантическое совпадение
+                self.code_cache.delete(url, user_query, semantic=True)
 
         # 2) pick cleaning & parsing strategies
         cleaning_strategy, parsing_strategy = get_pipeline(html, mode, self.code_cache)

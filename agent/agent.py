@@ -8,7 +8,8 @@ def run_agent(
         meta: Optional[List[str]] = None,
         mode: str = "auto",
         dynamic: Optional[bool] = None,
-        timeout: int = 10
+        timeout: int = 10,
+        regenerate: bool = False
 ) -> Dict[str, Any]:
     """
     Main entrypoint for your “agent” façade.
@@ -29,5 +30,6 @@ def run_agent(
         meta=meta or [],
         mode=mode,
         dynamic=dynamic,
-        timeout=timeout
+        timeout=timeout,
+        regenerate=regenerate
     )
