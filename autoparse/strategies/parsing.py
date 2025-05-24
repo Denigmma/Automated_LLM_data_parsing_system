@@ -4,6 +4,7 @@ import os
 
 from autoparse.tools.llm.client import LLMClient
 from autoparse.tools.llm.structuring import parse_structured
+from autoparse.tools.llm.hintgen import generate_parsing_hints
 from autoparse.tools.llm.codegen import generate_parser
 from autoparse.cache.code_cache import ParserCodeCache
 
@@ -45,6 +46,7 @@ class CodegenParsingStrategy(ParsingStrategy):
     def __init__(self, code_cache: ParserCodeCache):
         self.code_cache = code_cache
 
+
     def parse(
         self,
         cleaned: str,
@@ -68,7 +70,11 @@ class CodegenParsingStrategy(ParsingStrategy):
             with open(full_path, "r", encoding="utf-8") as f:
                 code = f.read()
         else:
-            code = generate_parser(cleaned, user_query, client)
+            try:
+                hints = generate_parsing_hints(cleaned, user_query, client)
+            except Exception:
+                hints = None
+            code = generate_parser(cleaned, user_query, client, hint=hints)
             self.code_cache.store(url, user_query, code)
 
         return {"parser_code": code}
