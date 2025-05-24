@@ -2,9 +2,22 @@ import json
 import re
 from typing import Dict, Any
 from .client import LLMClient
-from .prompts import SYSTEM_PROMPT_STRUCTURING, USER_PROMPT_STRUCTURING_TEMPLATE
-
+from .prompts import SYSTEM_PROMPT_STRUCTURING, USER_PROMPT_STRUCTURING_TEMPLATE, token_message_error
 from typing import List
+
+import os
+import tiktoken
+MAX_INPUT_TOKENS = int(os.getenv("MAX_INPUT_TOKENS"))
+
+model_name = os.getenv("LLM_MODEL")
+
+try:
+    tokenizer = tiktoken.encoding_for_model(model_name)
+except KeyError:
+    tokenizer = tiktoken.get_encoding("cl100k_base")
+
+def num_tokens(text: str) -> int:
+    return len(tokenizer.encode(text))
 
 def parse_structured(
     html: str,
@@ -12,6 +25,19 @@ def parse_structured(
     client: LLMClient,
     user_query: str
 ) -> Dict[str, Any]:
+
+    uq_toks = num_tokens(user_query)
+    err_toks = num_tokens(token_message_error)
+
+    if num_tokens(html) + uq_toks > MAX_INPUT_TOKENS:
+        available_for_html = MAX_INPUT_TOKENS - uq_toks - err_toks
+        if available_for_html < 0:
+            available_for_html = 0
+
+        html_toks = tokenizer.encode(html)
+        truncated_html_toks = html_toks[:available_for_html]
+        html = tokenizer.decode(truncated_html_toks) + token_message_error
+
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT_STRUCTURING},
